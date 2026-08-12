@@ -52,6 +52,8 @@
     newSpecialButton: document.querySelector("#new-special-button"),
     crewCostTotal: document.querySelector("#crew-cost-total"),
     crewCostSupport: document.querySelector("#crew-cost-support"),
+    averageCostTotal: document.querySelector("#average-cost-total"),
+    averageCostSupport: document.querySelector("#average-cost-support"),
     paidWagesTotal: document.querySelector("#paid-wages-total"),
     taxesTotal: document.querySelector("#taxes-total"),
     taxesSupport: document.querySelector("#taxes-support"),
@@ -320,8 +322,12 @@
     const unresolvedCount = result.employeeCount - result.resolvedCount;
     elements.crewCostTotal.textContent = money(result.crewCost);
     elements.crewCostSupport.textContent = result.employeeCount
-      ? `${result.resolvedCount} worker${result.resolvedCount === 1 ? "" : "s"} calculated • ${money(result.averageCost)} average total cost per calculated worker${unresolvedCount ? ` • ${unresolvedCount} needs a rate` : ""}`
+      ? `${result.resolvedCount} worker${result.resolvedCount === 1 ? "" : "s"} included${unresolvedCount ? ` • ${unresolvedCount} needs a rate` : ""}`
       : "Select employees to build a crew";
+    elements.averageCostTotal.textContent = money(result.averageCost);
+    elements.averageCostSupport.textContent = result.resolvedCount
+      ? `Average total cost across ${result.resolvedCount} calculated worker${result.resolvedCount === 1 ? "" : "s"}`
+      : "Add employees with rates to calculate an average";
     elements.paidWagesTotal.textContent = money(result.paidWages);
     elements.taxesTotal.textContent = money(result.taxesTotal);
     elements.taxesSupport.textContent = `Crew total • ${money(perWorkerTaxes)} average per calculated worker`;
