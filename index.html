@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>Employee Crew Cost Calculator</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="brand-lockup" aria-label="Adman Electric">
+        <span class="brand-mark" aria-hidden="true">AE</span>
+        <span class="brand-name">ADMAN ELECTRIC</span>
+      </div>
+      <div class="header-title">
+        <p class="eyebrow">Labor planning</p>
+        <h1>Employee Crew Cost Calculator</h1>
+        <p id="agreement-summary" class="header-subtitle"></p>
+      </div>
+      <div class="header-actions">
+        <button class="button button-ghost button-on-dark" id="print-button" type="button">Print</button>
+        <button class="button button-light" id="open-settings-button" type="button">Edit rates &amp; employees</button>
+      </div>
+    </header>
+
+    <main class="page-shell">
+      <section class="notice" aria-label="Rate notice">
+        <span class="notice-icon" aria-hidden="true">!</span>
+        <p>
+          These opening rates come from the supplied job template. Review the effective period and contract inputs
+          before using the result for planning. The supplied AP3/AP4 premium formulas omit the 10% apprentice
+          pension; confirm that rule before operational use.
+        </p>
+      </section>
+
+      <section class="summary-grid" aria-label="Crew cost summary">
+        <article class="summary-card summary-card-primary">
+          <p class="summary-label">Crew cost per hour</p>
+          <p class="summary-value" id="crew-cost-total">$0.00</p>
+          <p class="summary-support" id="crew-cost-support">Select employees to build a crew</p>
+        </article>
+        <article class="summary-card">
+          <p class="summary-label">Paid wages</p>
+          <p class="summary-value summary-value-small" id="paid-wages-total">$0.00</p>
+          <p class="summary-support">Hourly wage and pay premium</p>
+        </article>
+        <article class="summary-card">
+          <p class="summary-label">Taxes &amp; insurance</p>
+          <p class="summary-value summary-value-small" id="taxes-total">$0.00</p>
+          <p class="summary-support" id="taxes-support">$0.00 per worker</p>
+        </article>
+        <article class="summary-card">
+          <p class="summary-label">Benefits &amp; other burden</p>
+          <p class="summary-value summary-value-small" id="benefits-total">$0.00</p>
+          <p class="summary-support" id="benefits-support">$0.00 per worker</p>
+        </article>
+      </section>
+
+      <div class="workspace-grid">
+        <aside class="panel employee-panel" aria-labelledby="employee-panel-title">
+          <div class="panel-heading">
+            <div>
+              <p class="step-label">Step 1</p>
+              <h2 id="employee-panel-title">Select employees</h2>
+            </div>
+            <span class="count-pill" id="employee-count-pill">0 selected</span>
+          </div>
+
+          <label class="search-field" for="employee-search">
+            <span class="visually-hidden">Search employees</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 21-4.35-4.35m2.35-5.65a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z" /></svg>
+            <input id="employee-search" type="search" placeholder="Search name or classification" autocomplete="off" />
+          </label>
+
+          <div class="selection-toolbar">
+            <button class="text-button" id="select-visible-button" type="button">Select visible</button>
+            <button class="text-button" id="clear-selection-button" type="button">Clear</button>
+          </div>
+
+          <div class="employee-list" id="employee-list" role="group" aria-label="Employee selection"></div>
+
+          <div class="add-crew-controls">
+            <label for="default-pay-type">Pay type for selected</label>
+            <select id="default-pay-type"></select>
+            <button class="button button-primary button-block" id="add-selected-button" type="button">
+              Add selected to crew
+            </button>
+          </div>
+        </aside>
+
+        <section class="panel crew-panel" aria-labelledby="crew-panel-title">
+          <div class="panel-heading crew-heading">
+            <div>
+              <p class="step-label">Step 2</p>
+              <h2 id="crew-panel-title">Review the crew</h2>
+              <p>Change an employee’s cost classification or pay type when needed.</p>
+            </div>
+            <div class="crew-actions">
+              <button class="button button-secondary" id="new-special-button" type="button">New special classification</button>
+              <button class="text-button text-button-danger" id="clear-crew-button" type="button">Clear crew</button>
+            </div>
+          </div>
+
+          <div class="empty-state" id="crew-empty-state">
+            <div class="empty-state-icon" aria-hidden="true">+</div>
+            <h3>No employees in this crew yet</h3>
+            <p>Select one or more names, choose a pay type, and add them here.</p>
+          </div>
+
+          <div class="table-scroll" id="crew-table-wrap" hidden>
+            <table class="crew-table">
+              <thead>
+                <tr>
+                  <th scope="col">Employee</th>
+                  <th scope="col">Cost classification</th>
+                  <th scope="col">Pay type</th>
+                  <th scope="col" class="numeric">Paid wage</th>
+                  <th scope="col" class="numeric">Taxes &amp; ins.</th>
+                  <th scope="col" class="numeric">Benefits</th>
+                  <th scope="col" class="numeric">Cost / hr</th>
+                  <th scope="col"><span class="visually-hidden">Actions</span></th>
+                </tr>
+              </thead>
+              <tbody id="crew-table-body"></tbody>
+            </table>
+          </div>
+
+          <section class="breakdown-section" aria-labelledby="breakdown-title">
+            <div class="section-heading-inline">
+              <div>
+                <p class="step-label">Crew rollup</p>
+                <h3 id="breakdown-title">Hourly cost detail</h3>
+              </div>
+              <span class="burden-pill" id="burden-rate-pill">0.0% burden on paid wages</span>
+            </div>
+            <div class="breakdown-grid">
+              <div>
+                <h4>Taxes &amp; insurance</h4>
+                <dl id="tax-breakdown" class="breakdown-list"></dl>
+              </div>
+              <div>
+                <h4>Benefits &amp; other burden</h4>
+                <dl id="benefit-breakdown" class="breakdown-list"></dl>
+              </div>
+            </div>
+          </section>
+
+          <section class="pricing-section" aria-labelledby="pricing-title">
+            <div>
+              <p class="step-label">Optional pricing</p>
+              <h3 id="pricing-title">Overhead and profit</h3>
+              <p>These percentages do not change crew cost; they only calculate a suggested sell rate.</p>
+            </div>
+            <div class="pricing-inputs">
+              <label>Overhead <span class="percent-input"><input id="overhead-rate" type="number" min="0" step="0.1" inputmode="decimal" /><span>%</span></span></label>
+              <label>Profit <span class="percent-input"><input id="profit-rate" type="number" min="0" step="0.1" inputmode="decimal" /><span>%</span></span></label>
+            </div>
+            <div class="sell-rate-card">
+              <span>Suggested sell rate</span>
+              <strong id="sell-rate-total">$0.00/hr</strong>
+              <small id="sell-rate-detail">Includes $0.00 overhead and $0.00 profit</small>
+            </div>
+          </section>
+        </section>
+      </div>
+
+      <p class="source-note">
+        Opening employee roster: “Employee List” snapshot (39 employees), editable under Edit rates &amp; employees. Rate model:
+        “429 Contract Input,” “Labor Details,” and “Crew Calc” from Collaborative Job Template NEW.xlsx.
+        Browser edits are stored only on this device.
+      </p>
+    </main>
+
+    <dialog class="modal modal-wide" id="settings-dialog">
+      <form method="dialog" class="modal-shell">
+        <header class="modal-header">
+          <div>
+            <p class="eyebrow">Contract setup</p>
+            <h2>Edit rates &amp; employees</h2>
+            <p>Maintain the roster and the editable assumptions behind the 429 Contract Input worksheet.</p>
+          </div>
+          <button class="icon-button" value="cancel" aria-label="Close rate settings" type="submit">×</button>
+        </header>
+        <div class="modal-body" id="settings-form-content"></div>
+        <footer class="modal-footer modal-footer-split">
+          <div>
+            <button class="text-button text-button-danger" id="reset-settings-button" type="button">Reset workbook defaults</button>
+            <button class="text-button" id="export-settings-button" type="button">Export settings</button>
+            <button class="text-button" id="import-settings-button" type="button">Import settings</button>
+            <input id="settings-file-input" type="file" accept="application/json,.json" hidden />
+          </div>
+          <button class="button button-primary" value="default" type="submit">Done</button>
+        </footer>
+      </form>
+    </dialog>
+
+    <dialog class="modal" id="special-dialog">
+      <form class="modal-shell" id="special-form">
+        <header class="modal-header">
+          <div>
+            <p class="eyebrow">Special classification</p>
+            <h2 id="special-dialog-title">Create a classification</h2>
+            <p>Choose the wage source separately from the benefit package.</p>
+          </div>
+          <button class="icon-button" id="close-special-button" aria-label="Close special classification" type="button">×</button>
+        </header>
+        <div class="modal-body form-stack">
+          <input id="special-id" type="hidden" />
+          <label class="field-label" for="special-name">Classification name
+            <input id="special-name" type="text" maxlength="60" required placeholder="Example: CW1 at AP1 wage" />
+          </label>
+          <label class="field-label" for="special-wage-source">Wage source
+            <select id="special-wage-source" required></select>
+          </label>
+          <label class="field-label" for="special-custom-wage" id="special-custom-wage-field" hidden>Custom hourly wage
+            <span class="money-input"><span>$</span><input id="special-custom-wage" aria-label="Custom hourly wage" type="number" min="0" step="0.01" inputmode="decimal" /></span>
+          </label>
+          <label class="field-label" for="special-benefit-source">Benefit package
+            <select id="special-benefit-source" required></select>
+          </label>
+          <div class="example-callout">
+            For a CW1 employee earning AP1 wages, choose <strong>AP 1</strong> as the wage source and
+            <strong>CW1</strong> as the benefit package.
+          </div>
+        </div>
+        <footer class="modal-footer">
+          <button class="button button-secondary" id="cancel-special-button" type="button">Cancel</button>
+          <button class="button button-primary" type="submit">Save classification</button>
+        </footer>
+      </form>
+    </dialog>
+
+    <dialog class="modal" id="worker-detail-dialog">
+      <form method="dialog" class="modal-shell">
+        <header class="modal-header">
+          <div>
+            <p class="eyebrow">Employee cost detail</p>
+            <h2 id="worker-detail-title">Cost breakdown</h2>
+            <p id="worker-detail-subtitle"></p>
+          </div>
+          <button class="icon-button" value="cancel" aria-label="Close employee details" type="submit">×</button>
+        </header>
+        <div class="modal-body" id="worker-detail-content"></div>
+        <footer class="modal-footer"><button class="button button-primary" value="default" type="submit">Done</button></footer>
+      </form>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+    <script src="data.js"></script>
+    <script src="employee-roster.js"></script>
+    <script src="calculator.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
