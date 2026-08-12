@@ -20,6 +20,9 @@ jobs:
       - name: Check out site files
         uses: actions/checkout@v4
 
+      - name: Verify calculator totals
+        run: npm test
+
       - name: Stage static site
         run: |
           mkdir -p "${RUNNER_TEMP}/site"
