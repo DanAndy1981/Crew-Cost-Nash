@@ -262,10 +262,13 @@
     elements.addSelectedButton.disabled = selectedCount === 0;
   }
 
-  function renderBreakdownList(element, breakdown, labels, total) {
+  function renderBreakdownList(element, breakdown, labels, total, workerCount) {
+    const workerLabel = workerCount
+      ? ` (${workerCount} worker${workerCount === 1 ? "" : "s"})`
+      : "";
     element.innerHTML = [
       ...Object.entries(labels).map(([key, label]) => `<div><dt>${escapeHtml(label)}</dt><dd>${money(breakdown[key])}</dd></div>`),
-      `<div class="breakdown-total"><dt>Total</dt><dd>${money(total)}</dd></div>`,
+      `<div class="breakdown-total"><dt>Crew total${workerLabel}</dt><dd>${money(total)}</dd></div>`,
     ].join("");
   }
 
@@ -317,16 +320,16 @@
     const unresolvedCount = result.employeeCount - result.resolvedCount;
     elements.crewCostTotal.textContent = money(result.crewCost);
     elements.crewCostSupport.textContent = result.employeeCount
-      ? `${result.resolvedCount} worker${result.resolvedCount === 1 ? "" : "s"} calculated • ${money(result.averageCost)} average${unresolvedCount ? ` • ${unresolvedCount} needs a rate` : ""}`
+      ? `${result.resolvedCount} worker${result.resolvedCount === 1 ? "" : "s"} calculated • ${money(result.averageCost)} average total cost per calculated worker${unresolvedCount ? ` • ${unresolvedCount} needs a rate` : ""}`
       : "Select employees to build a crew";
     elements.paidWagesTotal.textContent = money(result.paidWages);
     elements.taxesTotal.textContent = money(result.taxesTotal);
-    elements.taxesSupport.textContent = `${money(perWorkerTaxes)} per calculated worker`;
+    elements.taxesSupport.textContent = `Crew total • ${money(perWorkerTaxes)} average per calculated worker`;
     elements.benefitsTotal.textContent = money(result.benefitsTotal);
-    elements.benefitsSupport.textContent = `${money(perWorkerBenefits)} per calculated worker`;
+    elements.benefitsSupport.textContent = `Crew total • ${money(perWorkerBenefits)} average per calculated worker`;
     elements.burdenRatePill.textContent = `${percentage(result.burdenRate)} burden on paid wages`;
-    renderBreakdownList(elements.taxBreakdown, result.taxes, TAX_LABELS, result.taxesTotal);
-    renderBreakdownList(elements.benefitBreakdown, result.benefits, BENEFIT_LABELS, result.benefitsTotal);
+    renderBreakdownList(elements.taxBreakdown, result.taxes, TAX_LABELS, result.taxesTotal, result.resolvedCount);
+    renderBreakdownList(elements.benefitBreakdown, result.benefits, BENEFIT_LABELS, result.benefitsTotal, result.resolvedCount);
     elements.sellRateTotal.textContent = `${money(result.sellRate)}/hr`;
     elements.sellRateDetail.textContent = `Includes ${money(result.overhead)} overhead and ${money(result.profit)} profit`;
   }
