@@ -4,6 +4,7 @@
   "private": true,
   "description": "Employee crew cost calculator",
   "scripts": {
+    "test": "node --test",
     "start": "node server.js"
   },
   "engines": {
